@@ -8,5 +8,6 @@ export const ROUTES = {
   profile: "/profile",
   register: "/register",
   resetPassword: "/reset-password",
+  settings: "/settings",
   verifyEmail: "/verify-email",
 } as const;

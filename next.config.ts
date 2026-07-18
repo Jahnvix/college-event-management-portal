@@ -32,6 +32,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  output: "standalone",
   compress: true,
   outputFileTracingRoot: __dirname,
   typedRoutes: true,
