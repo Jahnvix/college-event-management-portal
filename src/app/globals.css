@@ -105,3 +105,44 @@ body::before {
   backdrop-filter: blur(24px);
   box-shadow: var(--surface-shadow);
 }
+
+.landing-orb {
+  border-radius: 9999px;
+  filter: blur(2px);
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+
+.landing-orb-one {
+  animation: drift 12s ease-in-out infinite alternate;
+  background: rgba(14, 165, 233, 0.14);
+  height: 28rem;
+  right: -11rem;
+  top: -13rem;
+  width: 28rem;
+}
+
+.landing-orb-two {
+  animation: drift 15s ease-in-out infinite alternate-reverse;
+  background: rgba(249, 115, 22, 0.12);
+  bottom: -18rem;
+  height: 30rem;
+  left: -16rem;
+  width: 30rem;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2rem, 1.5rem, 0) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-orb {
+    animation: none;
+  }
+}

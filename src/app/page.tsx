@@ -1,5 +1,5 @@
-import { PlatformFoundation } from "@/features/platform/components/platform-foundation";
+import { LandingPage } from "@/features/landing/components/landing-page";
 
 export default function HomePage() {
-  return <PlatformFoundation />;
+  return <LandingPage />;
 }
