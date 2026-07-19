@@ -1,13 +1,14 @@
-.next
+.next/
 .turbo
 .husky/_
-coverage
-node_modules
+coverage/
+node_modules/
 playwright-report
 test-results
 tsconfig.tsbuildinfo
 
 .env
+.env.*
 .env.local
 .env.development.local
 .env.production.local
