@@ -29,10 +29,13 @@ const createNotificationSchema = z.object({
 async function resolveAudienceUserIds(input: z.infer<typeof createNotificationSchema>) {
   switch (input.audience) {
     case "ADMINS":
-      return (await prisma.user.findMany({
-        select: { id: true },
-        where: { role: UserRole.ADMIN, status: UserStatus.ACTIVE },
-      })).map((user) => user.id);
+      return (
+        await prisma.user.findMany({
+          select: { id: true },
+          where: { role: UserRole.ADMIN, status: UserStatus.ACTIVE },
+        })
+      ).map((user) => user.id);
+
     case "EVENT_ATTENDEES":
       if (!input.eventId) {
         return [];
@@ -40,17 +43,24 @@ async function resolveAudienceUserIds(input: z.infer<typeof createNotificationSc
 
       return [
         ...new Set(
-          (await prisma.registration.findMany({
-            select: { userId: true },
-            where: {
-              eventId: input.eventId,
-              status: {
-                in: [RegistrationStatus.APPROVED, RegistrationStatus.CHECKED_IN, RegistrationStatus.PENDING],
+          (
+            await prisma.registration.findMany({
+              select: { userId: true },
+              where: {
+                eventId: input.eventId,
+                status: {
+                  in: [
+                    RegistrationStatus.APPROVED,
+                    RegistrationStatus.CHECKED_IN,
+                    RegistrationStatus.PENDING,
+                  ],
+                },
               },
-            },
-          })).map((registration) => registration.userId),
+            })
+          ).map((registration) => registration.userId),
         ),
       ];
+
     case "WAITLISTED":
       if (!input.eventId) {
         return [];
@@ -58,25 +68,34 @@ async function resolveAudienceUserIds(input: z.infer<typeof createNotificationSc
 
       return [
         ...new Set(
-          (await prisma.registration.findMany({
-            select: { userId: true },
-            where: { eventId: input.eventId, status: RegistrationStatus.WAITLISTED },
-          })).map((registration) => registration.userId),
+          (
+            await prisma.registration.findMany({
+              select: { userId: true },
+              where: {
+                eventId: input.eventId,
+                status: RegistrationStatus.WAITLISTED,
+              },
+            })
+          ).map((registration) => registration.userId),
         ),
       ];
+
     case "SPECIFIC_USERS":
       return input.userIds;
+
     case "ACTIVE_STUDENTS":
     default:
-      return (await prisma.user.findMany({
-        select: { id: true },
-        where: { role: UserRole.STUDENT, status: UserStatus.ACTIVE },
-      })).map((user) => user.id);
+      return (
+        await prisma.user.findMany({
+          select: { id: true },
+          where: { role: UserRole.STUDENT, status: UserStatus.ACTIVE },
+        })
+      ).map((user) => user.id);
   }
 }
 
 export async function GET() {
-  if (!await requireAdmin()) {
+  if (!(await requireAdmin())) {
     return apiError("Administrator access is required.", 403);
   }
 
@@ -89,7 +108,9 @@ export async function GET() {
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
     take: 25,
   });
 
@@ -117,7 +138,8 @@ export async function POST(request: Request) {
   }
 
   const result = await createNotificationsForUsers({
-    actionUrl: parsed.data.actionUrl,
+    // ✅ FIX
+    actionUrl: parsed.data.actionUrl ?? null,
     channel: parsed.data.channel,
     message: parsed.data.message,
     metadata: {
