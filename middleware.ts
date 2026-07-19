@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 
 import { ROUTES } from "@/constants/routes";
 
-const protectedRoutes = [ROUTES.dashboard, ROUTES.profile, ROUTES.settings, ROUTES.notifications, ROUTES.savedEvents, ROUTES.admin];
+const protectedRoutes = [ROUTES.dashboard, ROUTES.profile, ROUTES.settings, ROUTES.notifications, ROUTES.savedEvents, ROUTES.calendar, ROUTES.admin];
 
 function isProtectedPath(pathname: string) {
   return protectedRoutes.some(
@@ -45,5 +45,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/notifications/:path*", "/saved-events/:path*", "/admin/:path*"],
+  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/notifications/:path*", "/saved-events/:path*", "/calendar/:path*", "/admin/:path*"],
 };

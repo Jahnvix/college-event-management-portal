@@ -1,0 +1,5 @@
+"use client";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+export function PreferenceToggle({ enabled: initialEnabled, field, label }: Readonly<{ enabled: boolean; field: "calendarSyncEnabled" | "emailAnnouncementsEnabled" | "emailReminderEnabled" | "inAppNotificationsEnabled"; label: string }>) { const [enabled, setEnabled] = useState(initialEnabled); const [pending, setPending] = useState(false); async function toggle() { const next = !enabled; setEnabled(next); setPending(true); const response = await fetch("/api/profile", { body: JSON.stringify({ [field]: next }), headers: { "Content-Type": "application/json" }, method: "PATCH" }); setPending(false); if (!response.ok) { setEnabled(!next); toast.error(`Unable to update ${label}.`); return; } toast.success(`${label} updated.`); } return <Button aria-pressed={enabled} disabled={pending} size="sm" variant={enabled ? "default" : "outline"} onClick={toggle}>{pending ? "Saving..." : enabled ? "Enabled" : "Off"}</Button>; }

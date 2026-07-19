@@ -1,5 +1,6 @@
 export const ROUTES = {
   admin: "/admin",
+  calendar: "/calendar",
   announcements: "/announcements",
   dashboard: "/dashboard",
   events: "/events",
