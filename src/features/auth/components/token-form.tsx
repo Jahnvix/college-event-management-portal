@@ -1,0 +1,7 @@
+"use client";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+export function TokenForm({ mode }: Readonly<{ mode: "reset" | "verify" }>) { const params = useSearchParams(); const [pending, setPending] = useState(false); async function submit(form: FormData) { setPending(true); const body = { email: form.get("email"), token: form.get("token"), ...(mode === "reset" ? { password: form.get("password") } : {}) }; const response = await fetch(`/api/auth/${mode === "reset" ? "reset-password" : "verify-email"}`, { body: JSON.stringify(body), headers: { "Content-Type": "application/json" }, method: "POST" }); setPending(false); if (!response.ok) { toast.error("The token is invalid or expired."); return; } toast.success(mode === "reset" ? "Password updated. You can sign in now." : "Email verified. You can sign in now."); } return <form action={submit} className="mt-6 space-y-4"><Input defaultValue={params.get("email") ?? ""} name="email" placeholder="Campus email" required type="email" /><Input defaultValue={params.get("token") ?? ""} name="token" placeholder="Token from email" required /><Input className={mode === "verify" ? "hidden" : ""} name="password" placeholder="New password" required={mode === "reset"} type="password" /><Button className="w-full" disabled={pending} type="submit">{pending ? "Submitting..." : mode === "reset" ? "Update password" : "Verify email"}</Button></form>; }

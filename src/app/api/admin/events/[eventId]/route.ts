@@ -1,11 +1,27 @@
-import { EventStatus, Prisma } from "@prisma/client";
+import { EventDifficulty, EventStatus, Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { requireAdmin } from "@/server/auth/require-admin";
 import { prisma } from "@/server/database";
 import { apiError, apiSuccess, validationError } from "@/server/http/api-response";
 
-const updateSchema = z.object({ title: z.string().min(3).max(120).optional(), shortDescription: z.string().min(10).max(280).optional(), description: z.string().min(20).optional(), venueName: z.string().min(2).optional(), venueAddress: z.string().min(2).optional(), venueCity: z.string().min(2).optional(), capacity: z.number().int().positive().optional(), status: z.nativeEnum(EventStatus).optional() });
+const updateSchema = z.object({
+  allowWaitlist: z.boolean().optional(),
+  capacity: z.coerce.number().int().positive().optional(),
+  description: z.string().min(20).optional(),
+  difficulty: z.nativeEnum(EventDifficulty).optional(),
+  endAt: z.coerce.date().optional(),
+  isFeatured: z.boolean().optional(),
+  registrationClosesAt: z.coerce.date().optional(),
+  requiresApproval: z.boolean().optional(),
+  shortDescription: z.string().min(10).max(280).optional(),
+  startAt: z.coerce.date().optional(),
+  status: z.nativeEnum(EventStatus).optional(),
+  title: z.string().min(3).max(120).optional(),
+  venueAddress: z.string().min(2).optional(),
+  venueCity: z.string().min(2).optional(),
+  venueName: z.string().min(2).optional(),
+});
 type Context = { params: Promise<{ eventId: string }> };
 
 export async function PATCH(request: Request, { params }: Context) {
