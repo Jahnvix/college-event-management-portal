@@ -32,17 +32,19 @@ export function markAllNotificationsRead(userId: string) {
 }
 
 export function deleteNotification(notificationId: string, userId: string) {
-  return prisma.notification.deleteMany({ where: { id: notificationId, userId } });
+  return prisma.notification.deleteMany({
+    where: { id: notificationId, userId },
+  });
 }
 
 export function createNotification(input: CreateNotificationInput) {
   return prisma.notification.create({
     data: {
       actionUrl: input.actionUrl ?? null,
-      channel: input.channel,
+      channel: input.channel ?? "IN_APP",
       deliveredAt: new Date(),
       message: input.message,
-      metadata: input.metadata,
+      metadata: input.metadata ?? null,
       title: input.title,
       type: input.type,
       userId: input.userId,
@@ -50,22 +52,27 @@ export function createNotification(input: CreateNotificationInput) {
   });
 }
 
-export async function createNotificationsForUsers(input: CreateNotificationsForUsersInput) {
+export async function createNotificationsForUsers(
+  input: CreateNotificationsForUsersInput,
+) {
   const uniqueUserIds = [...new Set(input.userIds)];
 
   if (!uniqueUserIds.length) {
     return { count: 0 };
   }
 
-  const optedInUserIds = input.respectInAppPreference === false
-    ? uniqueUserIds
-    : (await prisma.profile.findMany({
-        select: { userId: true },
-        where: {
-          inAppNotificationsEnabled: true,
-          userId: { in: uniqueUserIds },
-        },
-      })).map((profile) => profile.userId);
+  const optedInUserIds =
+    input.respectInAppPreference === false
+      ? uniqueUserIds
+      : (
+          await prisma.profile.findMany({
+            select: { userId: true },
+            where: {
+              inAppNotificationsEnabled: true,
+              userId: { in: uniqueUserIds },
+            },
+          })
+        ).map((profile) => profile.userId);
 
   if (!optedInUserIds.length) {
     return { count: 0 };
@@ -76,10 +83,10 @@ export async function createNotificationsForUsers(input: CreateNotificationsForU
       prisma.notification.create({
         data: {
           actionUrl: input.actionUrl ?? null,
-          channel: input.channel,
+          channel: input.channel ?? "IN_APP",
           deliveredAt: new Date(),
           message: input.message,
-          metadata: input.metadata,
+          metadata: input.metadata ?? null,
           title: input.title,
           type: input.type,
           userId,
