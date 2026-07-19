@@ -24,7 +24,17 @@ type NotificationItem = {
   };
 };
 
-type NotificationResponse = { data: NotificationItem[] };
+type NotificationResponse = {
+  data: NotificationItem[];
+};
+
+type NotificationForm = {
+  actionUrl: string;
+  audience: string;
+  message: string;
+  title: string;
+  type: NotificationType;
+};
 
 const selectClassName =
   "h-11 rounded-xl border border-border bg-background-elevated px-3 text-sm outline-none transition focus-visible:ring-4 focus-visible:ring-ring";
@@ -32,7 +42,9 @@ const selectClassName =
 export function NotificationManager() {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [sending, setSending] = useState(false);
-  const [form, setForm] = useState({
+
+  // ✅ Fixed typing
+  const [form, setForm] = useState<NotificationForm>({
     actionUrl: "/dashboard",
     audience: "ACTIVE_STUDENTS",
     message: "",
@@ -61,6 +73,10 @@ export function NotificationManager() {
 
     try {
       const response = await fetch("/api/admin/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           actionUrl: form.actionUrl || undefined,
           audience: form.audience,
@@ -68,19 +84,27 @@ export function NotificationManager() {
           title: form.title,
           type: form.type,
         }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
       });
 
       if (!response.ok) {
         throw new Error("Unable to send notifications.");
       }
 
-      setForm((current) => ({ ...current, message: "", title: "" }));
+      setForm((current) => ({
+        ...current,
+        message: "",
+        title: "",
+      }));
+
       await refreshNotifications();
+
       toast.success("Notifications sent.");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to send notifications.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to send notifications."
+      );
     } finally {
       setSending(false);
     }
@@ -90,8 +114,12 @@ export function NotificationManager() {
     <Card>
       <CardHeader>
         <CardTitle>Notifications</CardTitle>
-        <p className="text-sm text-muted">Reach students quickly with in-app announcements and operational updates.</p>
+        <p className="text-sm text-muted">
+          Reach students quickly with in-app announcements and operational
+          updates.
+        </p>
       </CardHeader>
+
       <CardContent className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <section className="space-y-4 rounded-3xl border border-border p-5">
           <div className="grid gap-4">
@@ -101,9 +129,15 @@ export function NotificationManager() {
                 id="notification-title"
                 placeholder="Schedule update"
                 value={form.title}
-                onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    title: event.target.value,
+                  }))
+                }
               />
             </div>
+
             <div>
               <Label htmlFor="notification-message">Message</Label>
               <Textarea
@@ -111,30 +145,47 @@ export function NotificationManager() {
                 className="min-h-28"
                 placeholder="Explain the update clearly and tell recipients what to do next."
                 value={form.message}
-                onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    message: event.target.value,
+                  }))
+                }
               />
             </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label htmlFor="notification-audience">Audience</Label>
+
                 <select
                   id="notification-audience"
                   className={selectClassName}
                   value={form.audience}
-                  onChange={(event) => setForm((current) => ({ ...current, audience: event.target.value }))}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      audience: event.target.value,
+                    }))
+                  }
                 >
                   <option value="ACTIVE_STUDENTS">Active students</option>
                   <option value="ADMINS">Admins</option>
                 </select>
               </div>
+
               <div>
                 <Label htmlFor="notification-type">Type</Label>
+
                 <select
                   id="notification-type"
                   className={selectClassName}
                   value={form.type}
                   onChange={(event) =>
-                    setForm((current) => ({ ...current, type: event.target.value as NotificationType }))
+                    setForm((current) => ({
+                      ...current,
+                      type: event.target.value as NotificationType,
+                    }))
                   }
                 >
                   {Object.values(NotificationType).map((type) => (
@@ -145,19 +196,31 @@ export function NotificationManager() {
                 </select>
               </div>
             </div>
+
             <div>
               <Label htmlFor="notification-link">Action link</Label>
+
               <Input
                 id="notification-link"
                 placeholder="/dashboard"
                 value={form.actionUrl}
-                onChange={(event) => setForm((current) => ({ ...current, actionUrl: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    actionUrl: event.target.value,
+                  }))
+                }
               />
             </div>
           </div>
+
           <Button
             className="w-full"
-            disabled={sending || form.title.trim().length < 3 || form.message.trim().length < 10}
+            disabled={
+              sending ||
+              form.title.trim().length < 3 ||
+              form.message.trim().length < 10
+            }
             onClick={() => void sendNotification()}
           >
             <Send className="size-4" />
@@ -170,20 +233,32 @@ export function NotificationManager() {
             <BellRing className="size-4 text-primary" />
             <p className="font-bold">Recent deliveries</p>
           </div>
+
           {items.length ? (
             items.map((item) => (
-              <article className="rounded-3xl border border-border p-4" key={item.id}>
+              <article
+                key={item.id}
+                className="rounded-3xl border border-border p-4"
+              >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-bold">{item.title}</p>
-                      <Badge variant="secondary">{item.type.toLowerCase().replaceAll("_", " ")}</Badge>
+
+                      <Badge variant="secondary">
+                        {item.type.toLowerCase().replaceAll("_", " ")}
+                      </Badge>
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-muted">{item.message}</p>
+
+                    <p className="mt-2 text-sm leading-6 text-muted">
+                      {item.message}
+                    </p>
+
                     <p className="mt-3 text-xs font-bold text-muted">
                       {item.user.name} · {item.user.email}
                     </p>
                   </div>
+
                   <p className="text-xs text-muted">
                     {new Date(item.createdAt).toLocaleString("en-IN", {
                       dateStyle: "medium",
