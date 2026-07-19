@@ -4,8 +4,10 @@ import { createNotification } from "@/server/notifications/notification-service"
 import { prisma } from "@/server/database";
 
 function usesApprovedSeat(status: RegistrationStatus) {
-  return [RegistrationStatus.APPROVED, RegistrationStatus.CHECKED_IN, RegistrationStatus.NO_SHOW].includes(
-    status,
+  return (
+    status === RegistrationStatus.APPROVED ||
+    status === RegistrationStatus.CHECKED_IN ||
+    status === RegistrationStatus.NO_SHOW
   );
 }
 
@@ -50,7 +52,9 @@ export async function updateRegistrationByAdmin(input: {
           },
         },
       },
-      where: { id: input.registrationId },
+      where: {
+        id: input.registrationId,
+      },
     });
 
     if (!registration) {
@@ -58,22 +62,41 @@ export async function updateRegistrationByAdmin(input: {
     }
 
     const nextStatus = input.status ?? registration.status;
+
     const wasApproved = usesApprovedSeat(registration.status);
     const isApproved = usesApprovedSeat(nextStatus);
+
     const wasWaitlisted = usesWaitlistSlot(registration.status);
     const isWaitlisted = usesWaitlistSlot(nextStatus);
 
     const updatedRegistration = await transaction.registration.update({
       data: {
-        approvedAt: nextStatus === RegistrationStatus.APPROVED ? new Date() : registration.approvedAt,
-        attendedAt: nextStatus === RegistrationStatus.CHECKED_IN ? new Date() : registration.attendedAt,
-        cancelledAt: nextStatus === RegistrationStatus.CANCELLED ? new Date() : registration.cancelledAt,
+        approvedAt:
+          nextStatus === RegistrationStatus.APPROVED
+            ? new Date()
+            : registration.approvedAt,
+        attendedAt:
+          nextStatus === RegistrationStatus.CHECKED_IN
+            ? new Date()
+            : registration.attendedAt,
+        cancelledAt:
+          nextStatus === RegistrationStatus.CANCELLED
+            ? new Date()
+            : registration.cancelledAt,
         notes: input.notes ?? registration.notes,
-        rejectedAt: nextStatus === RegistrationStatus.REJECTED ? new Date() : registration.rejectedAt,
+        rejectedAt:
+          nextStatus === RegistrationStatus.REJECTED
+            ? new Date()
+            : registration.rejectedAt,
         status: nextStatus,
-        waitlistedAt: nextStatus === RegistrationStatus.WAITLISTED ? new Date() : registration.waitlistedAt,
+        waitlistedAt:
+          nextStatus === RegistrationStatus.WAITLISTED
+            ? new Date()
+            : registration.waitlistedAt,
       },
-      where: { id: registration.id },
+      where: {
+        id: registration.id,
+      },
     });
 
     if (wasApproved !== isApproved || wasWaitlisted !== isWaitlisted) {
@@ -88,7 +111,9 @@ export async function updateRegistrationByAdmin(input: {
             increment: !wasWaitlisted && isWaitlisted ? 1 : 0,
           },
         },
-        where: { id: registration.event.id },
+        where: {
+          id: registration.event.id,
+        },
       });
     }
 
