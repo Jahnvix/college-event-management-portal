@@ -1,0 +1,4 @@
+"use client";
+import { useEffect, useState } from "react";
+type Announcement = { id: string; status: string; title: string };
+export function AnnouncementManager() { const [items, setItems] = useState<Announcement[]>([]); useEffect(() => { void fetch("/api/admin/announcements").then(async (response) => { if (response.ok) { const payload = await response.json() as { data: Announcement[] }; setItems(payload.data); } }); }, []); return <section className="rounded-2xl border border-border p-5"><p className="font-bold">Announcement management</p><div className="mt-3 space-y-2">{items.length ? items.slice(0, 5).map((item) => <div className="flex justify-between gap-3 text-sm" key={item.id}><span>{item.title}</span><span className="text-muted">{item.status}</span></div>) : <p className="text-sm text-muted">No announcements created yet.</p>}</div></section>; }
