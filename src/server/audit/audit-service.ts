@@ -18,7 +18,7 @@ export function createAuditLog(input: CreateAuditLogInput) {
       actorId: input.actorId ?? null,
       entityId: input.entityId ?? null,
       entityType: input.entityType,
-      metadata: input.metadata,
+      metadata: input.metadata ?? null,
       summary: input.summary,
     },
   });
