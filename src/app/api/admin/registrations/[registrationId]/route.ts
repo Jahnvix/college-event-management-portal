@@ -10,7 +10,9 @@ const updateRegistrationSchema = z.object({
   status: z.nativeEnum(RegistrationStatus).optional(),
 });
 
-type Context = { params: Promise<{ registrationId: string }> };
+type Context = {
+  params: Promise<{ registrationId: string }>;
+};
 
 export async function PATCH(request: Request, { params }: Context) {
   const admin = await requireAdmin();
@@ -29,14 +31,21 @@ export async function PATCH(request: Request, { params }: Context) {
   try {
     const registration = await updateRegistrationByAdmin({
       actorId: admin.id,
-      notes: parsed.data.notes,
       registrationId: (await params).registrationId,
-      status: parsed.data.status,
+      ...(parsed.data.notes !== undefined
+        ? { notes: parsed.data.notes }
+        : {}),
+      ...(parsed.data.status !== undefined
+        ? { status: parsed.data.status }
+        : {}),
     });
 
     return apiSuccess(registration);
   } catch (error) {
-    if (error instanceof Error && error.message === "REGISTRATION_NOT_FOUND") {
+    if (
+      error instanceof Error &&
+      error.message === "REGISTRATION_NOT_FOUND"
+    ) {
       return apiError("Registration not found.", 404);
     }
 
